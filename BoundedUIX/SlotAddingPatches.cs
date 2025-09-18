@@ -13,7 +13,7 @@ namespace BoundedUIX
     {
         private static IEnumerable<CodeInstruction> PostfixToAddSlot(this IEnumerable<CodeInstruction> codeInstructions, IEnumerable<CodeInstruction> targetSlotLoadInstructions, AddSlotPostfix postfix)
         {
-            var addSlotMethod = typeof(Slot).GetMethod(nameof(Slot.AddSlot));
+            var addSlotMethod = typeof(Slot).GetMethod(nameof(Slot.AddSlot), new[] { typeof(string) });
 
             foreach (var code in codeInstructions)
             {
@@ -31,6 +31,7 @@ namespace BoundedUIX
 
         private delegate Slot AddSlotPostfix(Slot newSlot, Slot targetSlot);
 
+        [HarmonyPatch(typeof(SceneInspector))]
         private static class SceneInspectorPatches
         {
             private static IEnumerable<CodeInstruction> LoadFromSceneInspector
@@ -38,8 +39,8 @@ namespace BoundedUIX
                 get
                 {
                     yield return new CodeInstruction(OpCodes.Ldarg_0);
-                    yield return new CodeInstruction(OpCodes.Ldfld, typeof(SceneInspector).GetField(nameof(SceneInspector.ComponentView), AccessTools.all));
-                    yield return new CodeInstruction(OpCodes.Callvirt, typeof(SyncRef<Slot>).GetProperty(nameof(SyncRef<Slot>.Target)).GetMethod);
+                    yield return new CodeInstruction(OpCodes.Ldfld, AccessTools.Field(typeof(SceneInspector), nameof(SceneInspector.ComponentView)));
+                    yield return new CodeInstruction(OpCodes.Callvirt, AccessTools.PropertyGetter(typeof(SyncRef<Slot>), nameof(SyncRef<Slot>.Target)));
                 }
             }
 
@@ -55,7 +56,7 @@ namespace BoundedUIX
             }
 
             [HarmonyTranspiler]
-            [HarmonyPatch(typeof(SceneInspector), "OnAddChildPressed")]
+            [HarmonyPatch("OnAddChildPressed")]
             private static IEnumerable<CodeInstruction> OnAddChildPressedTranspiler(IEnumerable<CodeInstruction> codeInstructions)
             {
                 return codeInstructions.PostfixToAddSlot(LoadFromSceneInspector, OnAddChildPostfix);
@@ -79,59 +80,10 @@ namespace BoundedUIX
             }
 
             [HarmonyTranspiler]
-            [HarmonyPatch(typeof(SceneInspector), "OnInsertParentPressed")]
+            [HarmonyPatch("OnInsertParentPressed")]
             private static IEnumerable<CodeInstruction> OnInsertParentPressedTranspiler(IEnumerable<CodeInstruction> codeInstructions)
             {
                 return codeInstructions.PostfixToAddSlot(LoadFromSceneInspector, OnInsertParentPostfix);
-            }
-        }
-
-        [HarmonyPatch(typeof(SlotPositioning), nameof(SlotPositioning.CreatePivotAtCenter), new[] { typeof(Slot), typeof(BoundingBox), typeof(bool) }, new[] { ArgumentType.Normal, ArgumentType.Ref, ArgumentType.Normal })]
-        private static class SlotPositioningCreatePivotAtCenterPatch
-        {
-            private static Slot CreatePivotAddPostfix(Slot newSlot, Slot targetSlot)
-            {
-                if (targetSlot.TryGetMovableRectTransform(out var originalTransform))
-                {
-                    newSlot.Name = BoundedUIX.PivotSlotName.Replace(BoundedUIX.TargetSlotNamePlaceholder, targetSlot.Name);
-                    newSlot.AttachComponent<RectTransform>();
-                }
-
-                return newSlot;
-            }
-
-            private static void Postfix(Slot slot, ref Slot __result)
-            {
-                // Can't be root slot when this gives true
-                if (!slot.TryGetMovableRectTransform(out var originalTransform)
-                 || !__result.TryGetMovableRectTransform(out var pivotTransform))
-                    return;
-
-                if (slot == __result)
-                {
-                    __result = slot.Parent.AddSlot(BoundedUIX.PivotSlotName.Replace(BoundedUIX.TargetSlotNamePlaceholder, slot.Name));
-                    pivotTransform = __result.AttachComponent<RectTransform>();
-
-                    slot.SetParent(__result);
-                }
-
-                var originalArea = originalTransform.ComputeGlobalComputeRect();
-                var parentArea = originalTransform.RectParent.ComputeGlobalComputeRect();
-
-                var pivotAnchor = (originalArea.Center - parentArea.ExtentMin) / parentArea.size;
-                var pivotOffset = originalArea.size / 2f;
-
-                pivotTransform.AnchorMin.Value = pivotAnchor;
-                pivotTransform.AnchorMax.Value = pivotAnchor;
-                pivotTransform.OffsetMin.Value = -pivotOffset;
-                pivotTransform.OffsetMax.Value = pivotOffset;
-
-                originalTransform.ResetTransform();
-            }
-
-            private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> codeInstructions)
-            {
-                return codeInstructions.PostfixToAddSlot(new[] { new CodeInstruction(OpCodes.Ldarg_0) }, CreatePivotAddPostfix);
             }
         }
     }
