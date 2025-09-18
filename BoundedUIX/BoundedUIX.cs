@@ -92,7 +92,7 @@ namespace BoundedUIX
         public static string ParentSlotName => Config.GetValue(parentSlotNameKey);
         public static string PivotSlotName => Config.GetValue(pivotSlotNameKey);
 
-        public override string Author => "Banane9";
+        public override string Author => "Banane9 & esnya";
         public override string Link => "https://github.com/ResoniteModdingGroup/BoundedUIX";
         public override string Name => "BoundedUIX-RML";
         public override string Version => "3.0.0";
