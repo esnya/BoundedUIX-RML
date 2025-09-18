@@ -1,3 +1,4 @@
+// Built against Resonite 2025.9.12.1173
 using HarmonyLib;
 using ResoniteModLoader;
 
