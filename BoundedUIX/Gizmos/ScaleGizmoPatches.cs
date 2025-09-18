@@ -1,19 +1,20 @@
-﻿using Elements.Core;
+using Elements.Core;
 using FrooxEngine;
 using FrooxEngine.UIX;
 using FrooxEngine.Undo;
 using HarmonyLib;
 
-namespace BoundedUIX
+namespace BoundedUIX.Gizmos
 {
-    [HarmonyPatch(typeof(ScaleGizmo))]
+    using Mod = global::BoundedUIX.BoundedUIX;
+
     internal static class ScaleGizmoPatches
     {
         [HarmonyPostfix]
-        [HarmonyPatch(nameof(ScaleGizmo.OnInteractionBegin))]
+        [HarmonyPatch(typeof(ScaleGizmo), "OnInteractionBegin", new[] { typeof(Slot), typeof(float3), typeof(float3), typeof(float3?), typeof(bool) })]
         private static void OnInteractionBeginPostfix(ScaleGizmo __instance)
         {
-            if (!BoundedUIX.EnableUIXGizmos || !__instance.TargetSlot.Target.TryGetMovableRectTransform(out RectTransform rectTransform))
+            if (!Mod.EnableUIXGizmos || !__instance.TargetSlot.Target.TryGetMovableRectTransform(out RectTransform rectTransform))
                 return;
 
             var originalTransform = rectTransform.GetOriginal();
@@ -36,11 +37,11 @@ namespace BoundedUIX
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(nameof(ScaleGizmo.UpdatePoint))]
+        [HarmonyPatch(typeof(ScaleGizmo), "UpdatePoint")]
         private static void UpdatePointPostfix(ScaleGizmo __instance)
         {
             var targetSlot = __instance.TargetSlot.Target;
-            if (!BoundedUIX.EnableUIXGizmos || !targetSlot.TryGetMovableRectTransform(out var rectTransform))
+            if (!Mod.EnableUIXGizmos || !targetSlot.TryGetMovableRectTransform(out var rectTransform))
                 return;
 
             var originalRect = rectTransform.GetOriginal();

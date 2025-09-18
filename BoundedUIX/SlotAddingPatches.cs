@@ -1,14 +1,11 @@
-﻿using Elements.Core;
+using Elements.Core;
 using FrooxEngine;
 using FrooxEngine.UIX;
 using FrooxEngine.Undo;
 using HarmonyLib;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BoundedUIX
 {
@@ -34,7 +31,6 @@ namespace BoundedUIX
 
         private delegate Slot AddSlotPostfix(Slot newSlot, Slot targetSlot);
 
-        [HarmonyPatch(typeof(SceneInspector))]
         private static class SceneInspectorPatches
         {
             private static IEnumerable<CodeInstruction> LoadFromSceneInspector
@@ -59,7 +55,7 @@ namespace BoundedUIX
             }
 
             [HarmonyTranspiler]
-            [HarmonyPatch(nameof(SceneInspector.OnAddChildPressed))]
+            [HarmonyPatch(typeof(SceneInspector), "OnAddChildPressed")]
             private static IEnumerable<CodeInstruction> OnAddChildPressedTranspiler(IEnumerable<CodeInstruction> codeInstructions)
             {
                 return codeInstructions.PostfixToAddSlot(LoadFromSceneInspector, OnAddChildPostfix);
@@ -83,7 +79,7 @@ namespace BoundedUIX
             }
 
             [HarmonyTranspiler]
-            [HarmonyPatch(nameof(SceneInspector.OnInsertParentPressed))]
+            [HarmonyPatch(typeof(SceneInspector), "OnInsertParentPressed")]
             private static IEnumerable<CodeInstruction> OnInsertParentPressedTranspiler(IEnumerable<CodeInstruction> codeInstructions)
             {
                 return codeInstructions.PostfixToAddSlot(LoadFromSceneInspector, OnInsertParentPostfix);

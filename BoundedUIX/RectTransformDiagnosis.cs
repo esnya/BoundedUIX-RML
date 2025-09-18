@@ -1,20 +1,15 @@
-﻿using FrooxEngine.UIX;
-using FrooxEngine;
-using HarmonyLib;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Elements.Core;
+using FrooxEngine;
+using FrooxEngine.UIX;
+using HarmonyLib;
 
 namespace BoundedUIX
 {
     [HarmonyPatch(typeof(RectTransform))]
-    internal static class RectTransformPatches
+    internal static class RectTransformDiagnosis
     {
         [HarmonyPostfix]
-        [HarmonyPatch(nameof(RectTransform.BuildInspectorUI))]
+        [HarmonyPatch("BuildInspectorUI")]
         private static void BuildInspectorUIPostfix(RectTransform __instance, UIBuilder ui)
         {
             var button = ui.Button("Visualize Preferred Area");

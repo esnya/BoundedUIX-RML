@@ -1,19 +1,24 @@
-﻿using Elements.Core;
+using Elements.Core;
 using FrooxEngine;
 using FrooxEngine.UIX;
 using FrooxEngine.Undo;
 using HarmonyLib;
 
-namespace BoundedUIX
+namespace BoundedUIX.Gizmos
 {
-    [HarmonyPatch(typeof(AxisTranslationGizmo))]
-    internal static class AxisTranslationGizmoPatches
+    using Mod = global::BoundedUIX.BoundedUIX;
+
+    internal static class PlaneTranslationGizmoPatches
     {
+        private static readonly AccessTools.FieldRef<PlaneTranslationGizmo, float3> PointOffsetRef = AccessTools.FieldRefAccess<PlaneTranslationGizmo, float3>("pointOffset");
+        private static readonly AccessTools.FieldRef<PlaneTranslationGizmo, SyncRef<SegmentMesh>> Line0Ref = AccessTools.FieldRefAccess<PlaneTranslationGizmo, SyncRef<SegmentMesh>>("line0");
+        private static readonly AccessTools.FieldRef<PlaneTranslationGizmo, SyncRef<SegmentMesh>> Line1Ref = AccessTools.FieldRefAccess<PlaneTranslationGizmo, SyncRef<SegmentMesh>>("line1");
+
         [HarmonyPostfix]
-        [HarmonyPatch(nameof(AxisTranslationGizmo.OnInteractionBegin))]
-        private static void OnInteractionBeginPostfix(AxisTranslationGizmo __instance)
+        [HarmonyPatch(typeof(PlaneTranslationGizmo), "OnInteractionBegin", new[] { typeof(Slot), typeof(float3), typeof(float3), typeof(float3?), typeof(bool) })]
+        private static void OnInteractionBeginPostfix(PlaneTranslationGizmo __instance)
         {
-            if (!BoundedUIX.EnableUIXGizmos || !__instance.TargetSlot.Target.TryGetMovableRectTransform(out RectTransform rectTransform))
+            if (!Mod.EnableUIXGizmos || !__instance.TargetSlot.Target.TryGetMovableRectTransform(out var rectTransform))
                 return;
 
             var originalTransform = rectTransform.GetOriginal();
@@ -36,24 +41,19 @@ namespace BoundedUIX
         }
 
         [HarmonyPrefix]
-        [HarmonyPatch(nameof(AxisTranslationGizmo.UpdatePoint))]
-        private static bool UpdatePointPrefix(AxisTranslationGizmo __instance, float3 localPoint)
+        [HarmonyPatch(typeof(PlaneTranslationGizmo), "UpdatePoint", new[] { typeof(float3) })]
+        private static bool UpdatePointPrefix(PlaneTranslationGizmo __instance, float3 localPoint)
         {
             var targetSlot = __instance.TargetSlot.Target;
-            if (!BoundedUIX.EnableUIXGizmos || !targetSlot.TryGetMovableRectTransform(out var rectTransform))
+            if (!Mod.EnableUIXGizmos || !targetSlot.TryGetMovableRectTransform(out var rectTransform))
                 return true;
 
-            var offsetPoint = localPoint - __instance._pointOffset;
-            var projectedPoint = MathX.Project(offsetPoint, __instance.LocalAxis);
+            var offsetPoint = localPoint - PointOffsetRef(__instance);
+            var projectedPoint = MathX.Reject(offsetPoint, __instance.LocalNormal);
             projectedPoint = __instance.Slot.LocalPointToGlobal(projectedPoint);
             projectedPoint = __instance.PointSpace.Space.GlobalPointToLocal(projectedPoint);
             var originalRect = rectTransform.GetOriginal();
             var translationOffset = (projectedPoint - __instance.PointSpace.Space.GlobalPointToLocal(originalRect.Center)).xy;
-
-            if (__instance.TargetValue.Target != null)
-            {
-                __instance.TargetValue.Target.Value = translationOffset.Magnitude;
-            }
 
             var pxOffset = rectTransform.Canvas.UnitScale.Value * translationOffset;
             if (!originalRect.Local)
@@ -75,10 +75,15 @@ namespace BoundedUIX
                     rectTransform.AnchorMax.Value += anchorOffset;
             }
 
-            var line = MathX.Reject(localPoint, __instance.LocalAxis);
-            __instance._line0.Target.PointB.Value = line;
-            __instance._line1.Target.PointA.Value = line;
-            __instance._line1.Target.PointB.Value = float3.Zero;
+            var line = MathX.Project(localPoint, __instance.LocalNormal);
+            if (Line0Ref(__instance).Target is SegmentMesh line0)
+                line0.PointB.Value = line;
+
+            if (Line1Ref(__instance).Target is SegmentMesh line1)
+            {
+                line1.PointA.Value = line;
+                line1.PointB.Value = float3.Zero;
+            }
 
             return false;
         }

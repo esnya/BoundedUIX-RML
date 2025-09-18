@@ -1,18 +1,15 @@
-﻿using Elements.Core;
+#nullable enable
+using Elements.Core;
 using FrooxEngine;
 using FrooxEngine.UIX;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace BoundedUIX
 {
     internal static class Helpers
     {
-        private static readonly ConditionalWeakTable<RectTransform, OriginalRect> originalRects = new();
+        private static readonly ConditionalWeakTable<RectTransform, OriginalRect> OriginalRects = new();
 
         public static bool Contains(this BoundingBox2D boundingBox, float2 point)
             => (point >= boundingBox.Min).All() && (point <= boundingBox.Max).All();
@@ -40,7 +37,7 @@ namespace BoundedUIX
         }
 
         public static OriginalRect GetOriginal(this RectTransform rectTransform)
-            => originalRects.GetOrCreateValue(rectTransform);
+            => OriginalRects.GetOrCreateValue(rectTransform);
 
         public static void ResetTransform(this RectTransform rectTransform)
         {
@@ -48,11 +45,11 @@ namespace BoundedUIX
             rectTransform.AnchorMax.Value = float2.One;
             rectTransform.OffsetMin.Value = float2.Zero;
             rectTransform.OffsetMax.Value = float2.Zero;
-            rectTransform.Pivot.Value = new(.5f, .5f);
+            rectTransform.Pivot.Value = new float2(0.5f, 0.5f);
         }
 
         public static bool TryGetMovableRectTransform(this Slot slot, out RectTransform rectTransform)
-            => slot.TryGetRectTransform(out rectTransform) && rectTransform.Slot != rectTransform.Canvas.Slot;
+            => slot.TryGetRectTransform(out rectTransform) && rectTransform!.Slot != rectTransform.Canvas.Slot;
 
         public static bool TryGetRectTransform(this Slot slot, out RectTransform rectTransform)
         {
@@ -62,7 +59,7 @@ namespace BoundedUIX
                 return true;
             }
 
-            rectTransform = null;
+            rectTransform = null!;
             return false;
         }
     }
