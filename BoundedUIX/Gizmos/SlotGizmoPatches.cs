@@ -14,11 +14,11 @@ namespace BoundedUIX.Gizmos
 
     internal static class SlotGizmoPatches
     {
-        private static readonly AccessTools.FieldRef<SlotGizmo, TransformRelayRef> TargetSlotRef = AccessTools.FieldRefAccess<SlotGizmo, TransformRelayRef>("targetSlot");
-        private static readonly AccessTools.FieldRef<SlotGizmo, SyncRef<TranslationGizmo>> TranslationGizmoRef = AccessTools.FieldRefAccess<SlotGizmo, SyncRef<TranslationGizmo>>("translationGizmo");
-        private static readonly AccessTools.FieldRef<SlotGizmo, SyncRef<RotationGizmo>> RotationGizmoRef = AccessTools.FieldRefAccess<SlotGizmo, SyncRef<RotationGizmo>>("rotationGizmo");
-        private static readonly AccessTools.FieldRef<SlotGizmo, SyncRef<ScaleGizmo>> ScaleGizmoRef = AccessTools.FieldRefAccess<SlotGizmo, SyncRef<ScaleGizmo>>("scaleGizmo");
-        private static readonly AccessTools.FieldRef<ScaleGizmo, SyncRef<Slot>> ScaleGizmoZSlotRef = AccessTools.FieldRefAccess<ScaleGizmo, SyncRef<Slot>>("zSlot");
+        private static readonly AccessTools.FieldRef<SlotGizmo, TransformRelayRef> TargetSlotRef = AccessTools.FieldRefAccess<SlotGizmo, TransformRelayRef>("_targetSlot");
+        private static readonly AccessTools.FieldRef<SlotGizmo, SyncRef<TranslationGizmo>> TranslationGizmoRef = AccessTools.FieldRefAccess<SlotGizmo, SyncRef<TranslationGizmo>>("_translationGizmo");
+        private static readonly AccessTools.FieldRef<SlotGizmo, SyncRef<RotationGizmo>> RotationGizmoRef = AccessTools.FieldRefAccess<SlotGizmo, SyncRef<RotationGizmo>>("_rotationGizmo");
+        private static readonly AccessTools.FieldRef<SlotGizmo, SyncRef<ScaleGizmo>> ScaleGizmoRef = AccessTools.FieldRefAccess<SlotGizmo, SyncRef<ScaleGizmo>>("_scaleGizmo");
+        private static readonly AccessTools.FieldRef<ScaleGizmo, SyncRef<Slot>> ScaleGizmoZSlotRef = AccessTools.FieldRefAccess<ScaleGizmo, SyncRef<Slot>>("_zSlot");
 
         private static BoundingBox BoundUIX(BoundingBox bounds, Slot target, Slot space)
         {

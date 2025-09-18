@@ -10,9 +10,9 @@ namespace BoundedUIX.Gizmos
 
     internal static class PlaneTranslationGizmoPatches
     {
-        private static readonly AccessTools.FieldRef<PlaneTranslationGizmo, float3> PointOffsetRef = AccessTools.FieldRefAccess<PlaneTranslationGizmo, float3>("pointOffset");
-        private static readonly AccessTools.FieldRef<PlaneTranslationGizmo, SyncRef<SegmentMesh>> Line0Ref = AccessTools.FieldRefAccess<PlaneTranslationGizmo, SyncRef<SegmentMesh>>("line0");
-        private static readonly AccessTools.FieldRef<PlaneTranslationGizmo, SyncRef<SegmentMesh>> Line1Ref = AccessTools.FieldRefAccess<PlaneTranslationGizmo, SyncRef<SegmentMesh>>("line1");
+        private static readonly AccessTools.FieldRef<PlaneTranslationGizmo, float3> PointOffsetRef = AccessTools.FieldRefAccess<PlaneTranslationGizmo, float3>("_pointOffset");
+        private static readonly AccessTools.FieldRef<PlaneTranslationGizmo, SyncRef<SegmentMesh>> Line0Ref = AccessTools.FieldRefAccess<PlaneTranslationGizmo, SyncRef<SegmentMesh>>("_line0");
+        private static readonly AccessTools.FieldRef<PlaneTranslationGizmo, SyncRef<SegmentMesh>> Line1Ref = AccessTools.FieldRefAccess<PlaneTranslationGizmo, SyncRef<SegmentMesh>>("_line1");
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(PlaneTranslationGizmo), "OnInteractionBegin", new[] { typeof(Slot), typeof(float3), typeof(float3), typeof(float3?), typeof(bool) })]
