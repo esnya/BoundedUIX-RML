@@ -8,10 +8,11 @@ namespace BoundedUIX.Gizmos
 {
     using Mod = global::BoundedUIX.BoundedUIX;
 
+    [HarmonyPatch(typeof(ScaleGizmo))]
     internal static class ScaleGizmoPatches
     {
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(ScaleGizmo), "OnInteractionBegin", new[] { typeof(Slot), typeof(float3), typeof(float3), typeof(float3?), typeof(bool) })]
+        [HarmonyPatch("OnInteractionBegin", new[] { typeof(Slot), typeof(float3), typeof(float3), typeof(float3?), typeof(bool) })]
         private static void OnInteractionBeginPostfix(ScaleGizmo __instance)
         {
             if (!Mod.EnableUIXGizmos || !__instance.TargetSlot.Target.TryGetMovableRectTransform(out RectTransform rectTransform))
@@ -37,7 +38,7 @@ namespace BoundedUIX.Gizmos
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(ScaleGizmo), "UpdatePoint")]
+        [HarmonyPatch("UpdatePoint")]
         private static void UpdatePointPostfix(ScaleGizmo __instance)
         {
             var targetSlot = __instance.TargetSlot.Target;
@@ -67,7 +68,6 @@ namespace BoundedUIX.Gizmos
                     rectTransform.AnchorMax.Value = originalRect.AnchorMax + anchorOffset;
             }
 
-            // Reset slot scale
             targetSlot.LocalScale = originalRect.Scale;
         }
     }

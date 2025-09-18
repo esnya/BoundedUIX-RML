@@ -5,10 +5,11 @@ namespace BoundedUIX.Gizmos
 {
     using Mod = global::BoundedUIX.BoundedUIX;
 
+    [HarmonyPatch(typeof(Gizmo))]
     internal static class UIXGizmos
     {
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(Gizmo), "PositionAtTarget")]
+        [HarmonyPatch("PositionAtTarget")]
         private static bool PositionAtTargetPrefix(Gizmo __instance)
         {
             if (!Mod.EnableUIXGizmos

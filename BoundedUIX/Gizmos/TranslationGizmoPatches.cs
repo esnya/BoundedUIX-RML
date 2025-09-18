@@ -5,10 +5,11 @@ namespace BoundedUIX.Gizmos
 {
     using Mod = global::BoundedUIX.BoundedUIX;
 
+    [HarmonyPatch(typeof(TranslationGizmo))]
     internal static class TranslationGizmoPatches
     {
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(TranslationGizmo), "SetTarget")]
+        [HarmonyPatch("SetTarget")]
         private static void SetTargetPostfix(TranslationGizmo __instance, Slot slot)
         {
             var moveableRect = slot.TryGetMovableRectTransform(out _);

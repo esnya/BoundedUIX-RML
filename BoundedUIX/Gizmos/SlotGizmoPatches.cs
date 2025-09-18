@@ -12,6 +12,7 @@ namespace BoundedUIX.Gizmos
 {
     using Mod = global::BoundedUIX.BoundedUIX;
 
+    [HarmonyPatch(typeof(SlotGizmo))]
     internal static class SlotGizmoPatches
     {
         private static readonly AccessTools.FieldRef<SlotGizmo, TransformRelayRef> TargetSlotRef = AccessTools.FieldRefAccess<SlotGizmo, TransformRelayRef>("_targetSlot");
@@ -41,7 +42,7 @@ namespace BoundedUIX.Gizmos
         }
 
         [HarmonyTranspiler]
-        [HarmonyPatch(typeof(SlotGizmo), "OnCommonUpdate")]
+        [HarmonyPatch("OnCommonUpdate")]
         private static IEnumerable<CodeInstruction> OnCommonUpdateTranspiler(IEnumerable<CodeInstruction> codeInstructions)
         {
             var boundUIXMethod = typeof(SlotGizmoPatches).GetMethod(nameof(BoundUIX), AccessTools.allDeclared);
@@ -71,7 +72,7 @@ namespace BoundedUIX.Gizmos
         }
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(SlotGizmo), "Setup")]
+        [HarmonyPatch("Setup")]
         private static void SetupPostfix(SlotGizmo __instance)
         {
             __instance.IsLocalSpace.OnValueChange += field => __instance.SwitchSpace();
@@ -94,7 +95,7 @@ namespace BoundedUIX.Gizmos
         }
 
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(SlotGizmo), "SwitchSpace")]
+        [HarmonyPatch("SwitchSpace")]
         private static bool SwitchSpacePrefix(SlotGizmo __instance)
         {
             var local = __instance.IsLocalSpace.Value;

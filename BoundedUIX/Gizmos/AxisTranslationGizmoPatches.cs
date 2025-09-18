@@ -8,6 +8,7 @@ namespace BoundedUIX.Gizmos
 {
     using Mod = global::BoundedUIX.BoundedUIX;
 
+    [HarmonyPatch(typeof(AxisTranslationGizmo))]
     internal static class AxisTranslationGizmoPatches
     {
         private static readonly AccessTools.FieldRef<AxisTranslationGizmo, float3> PointOffsetRef = AccessTools.FieldRefAccess<AxisTranslationGizmo, float3>("_pointOffset");
@@ -15,7 +16,7 @@ namespace BoundedUIX.Gizmos
         private static readonly AccessTools.FieldRef<AxisTranslationGizmo, SyncRef<SegmentMesh>> Line1Ref = AccessTools.FieldRefAccess<AxisTranslationGizmo, SyncRef<SegmentMesh>>("_line1");
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(AxisTranslationGizmo), "OnInteractionBegin", new[] { typeof(Slot), typeof(float3), typeof(float3), typeof(float3?), typeof(bool) })]
+        [HarmonyPatch("OnInteractionBegin", new[] { typeof(Slot), typeof(float3), typeof(float3), typeof(float3?), typeof(bool) })]
         private static void OnInteractionBeginPostfix(AxisTranslationGizmo __instance)
         {
             if (!Mod.EnableUIXGizmos || !__instance.TargetSlot.Target.TryGetMovableRectTransform(out RectTransform rectTransform))
@@ -41,7 +42,7 @@ namespace BoundedUIX.Gizmos
         }
 
         [HarmonyPrefix]
-        [HarmonyPatch(typeof(AxisTranslationGizmo), "UpdatePoint", new[] { typeof(float3) })]
+        [HarmonyPatch("UpdatePoint", new[] { typeof(float3) })]
         private static bool UpdatePointPrefix(AxisTranslationGizmo __instance, float3 localPoint)
         {
             var targetSlot = __instance.TargetSlot.Target;

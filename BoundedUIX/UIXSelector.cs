@@ -11,6 +11,7 @@ using HarmonyLib;
 
 namespace BoundedUIX
 {
+    [HarmonyPatch(typeof(DevTool))]
     internal static class UIXSelector
     {
         private static readonly FieldInfo GraphicField = AccessTools.Field(typeof(RectTransform), "_graphic");
@@ -92,7 +93,7 @@ namespace BoundedUIX
         }
 
         [HarmonyTranspiler]
-        [HarmonyPatch(typeof(DevTool), "TryOpenGizmo")]
+        [HarmonyPatch("TryOpenGizmo")]
         private static IEnumerable<CodeInstruction> TryOpenGizmoTranspiler(IEnumerable<CodeInstruction> codeInstructions)
         {
             var checkCanvasHitMethod = typeof(UIXSelector).GetMethod(nameof(CheckCanvas), AccessTools.allDeclared);
