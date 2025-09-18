@@ -42,8 +42,8 @@ namespace BoundedUIX.Gizmos
         }
 
         [HarmonyPrefix]
-        [HarmonyPatch("UpdatePoint", new[] { typeof(float3) })]
-        private static bool UpdatePointPrefix(AxisTranslationGizmo __instance, float3 localPoint)
+        [HarmonyPatch("UpdatePoint", new[] { typeof(float3), typeof(float3) })]
+        private static bool UpdatePointPrefix(AxisTranslationGizmo __instance, float3 localPoint, float3 direction)
         {
             var targetSlot = __instance.TargetSlot.Target;
             if (!Mod.EnableUIXGizmos || !targetSlot.TryGetMovableRectTransform(out var rectTransform))
