@@ -86,5 +86,71 @@ namespace BoundedUIX
                 return codeInstructions.PostfixToAddSlot(LoadFromSceneInspector, OnInsertParentPostfix);
             }
         }
+
+        [HarmonyPatch(typeof(SlotPositioning))]
+        private static class SlotPositioningCreatePivotAtCenterPatch
+        {
+            [HarmonyPostfix]
+            [HarmonyPatch("CreatePivotAtCenter", new[] { typeof(Slot), typeof(bool) })]
+            private static void CreatePivotAtCenterPostfix(Slot __0, bool __1, ref Slot __result)
+                => AdjustPivot(__0, ref __result);
+
+            [HarmonyPostfix]
+            [HarmonyPatch("CreatePivotAtCenter", new[] { typeof(Slot), typeof(BoundingBox), typeof(bool) }, new[] { ArgumentType.Normal, ArgumentType.Out, ArgumentType.Normal })]
+            private static void CreatePivotAtCenterWithBoxPostfix(Slot __0, ref BoundingBox __1, bool __2, ref Slot __result)
+                => AdjustPivot(__0, ref __result);
+
+            private static void AdjustPivot(Slot targetSlot, ref Slot result)
+            {
+                if (!targetSlot.TryGetMovableRectTransform(out var originalTransform))
+                    return;
+
+                var parentTransform = originalTransform.RectParent;
+                if (parentTransform == null)
+                    return;
+
+                var pivotSlot = result;
+                var configuredName = BoundedUIX.PivotSlotName.Replace(BoundedUIX.TargetSlotNamePlaceholder, targetSlot.Name);
+
+                if (pivotSlot == targetSlot)
+                {
+                    var parentSlot = targetSlot.Parent;
+                    if (parentSlot == null)
+                        return;
+
+                    pivotSlot = parentSlot.AddSlot(configuredName);
+                    pivotSlot.AttachComponent<RectTransform>();
+                    targetSlot.SetParent(pivotSlot);
+                }
+                else
+                {
+                    pivotSlot.Name = configuredName;
+                }
+
+                var pivotTransform = pivotSlot.GetComponent<RectTransform>() ?? pivotSlot.AttachComponent<RectTransform>();
+
+                var originalArea = originalTransform.ComputeGlobalComputeRect();
+                var parentArea = parentTransform.ComputeGlobalComputeRect();
+                var parentSize = parentArea.size;
+                if (parentSize == float2.Zero)
+                    return;
+
+                var pivotAnchor = (originalArea.Center - parentArea.ExtentMin) / parentSize;
+                var pivotOffset = originalArea.size / 2f;
+
+                pivotTransform.AnchorMin.Value = pivotAnchor;
+                pivotTransform.AnchorMax.Value = pivotAnchor;
+                pivotTransform.OffsetMin.Value = -pivotOffset;
+                pivotTransform.OffsetMax.Value = pivotOffset;
+
+                if (BoundedUIX.MoveTransformToParent)
+                {
+                    pivotTransform.CopyValues(originalTransform);
+                }
+
+                originalTransform.ResetTransform();
+                result = pivotSlot;
+            }
+        }
     }
 }
