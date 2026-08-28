@@ -93,9 +93,9 @@ namespace BoundedUIX
         public static string PivotSlotName => Config.GetValue(pivotSlotNameKey);
 
         public override string Author => "Banane9 & esnya";
-        public override string Link => "https://github.com/ResoniteModdingGroup/BoundedUIX";
+        public override string Link => "https://github.com/esnya/BoundedUIX-RML";
         public override string Name => "BoundedUIX-RML";
-        public override string Version => "3.0.0";
+        public override string Version => typeof(BoundedUIX).Assembly.GetName().Version?.ToString(3) ?? "3.0.0";
 
         public override void OnEngineInit()
         {
